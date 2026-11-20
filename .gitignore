@@ -8,3 +8,5 @@ dist/
 *.mid
 *.csv
 !scripts/*.py
+tools/
+warp_test/
