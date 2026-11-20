@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
 from . import audio_io
-from .analysis import AnalysisParams, analyze
+from .analysis import AnalysisParams, BeatDetection, analyze
 from .postprocess import BeatRecord, PostProcessParams, process
 
 ProgressCallback = Callable[[str], None]
@@ -17,6 +17,7 @@ ProgressCallback = Callable[[str], None]
 class TempoMapResult:
     records: list[BeatRecord]
     time_signature: str
+    detections: list[BeatDetection] = field(default_factory=list)  # オフセット適用前の生の拍 (テンポ補正用)
 
     @property
     def bar_count(self) -> int:
@@ -48,7 +49,11 @@ def run_analysis(
     records = process(detections, postprocess_params)
 
     report(f"解析完了。{records[-1].bar if records else 0} 小節を検出しました。")
-    return TempoMapResult(records=records, time_signature=analysis_params.time_signature)
+    return TempoMapResult(
+        records=records,
+        time_signature=analysis_params.time_signature,
+        detections=detections,
+    )
 
 
 def filter_by_resolution(records: list[BeatRecord], mode: str) -> list[BeatRecord]:

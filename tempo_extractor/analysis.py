@@ -18,6 +18,7 @@ TIME_SIGNATURE_BEATS_PER_BAR = {
 class BeatDetection:
     timestamp: float
     beat_number: int  # 小節内の拍位置 (1 = 小節頭/downbeat)
+    activation: float = 1.0  # 拍位置付近の RNN 出力 (拍らしさ)。低いと推測で補われた拍
 
     @property
     def is_downbeat(self) -> bool:
@@ -51,12 +52,16 @@ def analyze(wav_path: Path, params: AnalysisParams) -> list[BeatDetection]:
     )
     result = dbn_proc(activations)  # shape (N, 2): [timestamp, beat_number]
 
+    beat_act = activations.sum(axis=1)  # 拍 + 小節頭 の確率
     detections: list[BeatDetection] = []
     for timestamp, beat_number in result:
+        frame = int(round(timestamp * 100))
+        window = beat_act[max(0, frame - 2): frame + 3]
         detections.append(
             BeatDetection(
                 timestamp=float(timestamp),
                 beat_number=int(round(beat_number)),
+                activation=float(window.max()) if len(window) else 0.0,
             )
         )
     return detections

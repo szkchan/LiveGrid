@@ -29,6 +29,14 @@ jobs:
       - name: Install PyInstaller
         run: python -m pip install pyinstaller
 
+      - name: Fetch Rubber Band CLI (GPL, bundled for tempo warp)
+        run: |
+          curl.exe -sSfL -o rb.zip https://breakfastquay.com/files/releases/rubberband-4.0.0-gpl-executable-windows.zip
+          Expand-Archive rb.zip -DestinationPath rbtmp
+          New-Item -ItemType Directory -Force tools | Out-Null
+          Move-Item rbtmp/rubberband-4.0.0-gpl-executable-windows tools/rubberband
+          tools/rubberband/rubberband-r3.exe --version
+
       - name: Build exe
         run: >
           python -m PyInstaller main.py
@@ -40,6 +48,14 @@ jobs:
           --collect-all imageio_ffmpeg
           --collect-all matplotlib
           --collect-all mido
+          --add-data "tools/rubberband;rubberband"
+
+      - name: Smoke test (analyze + tempo warp with the built exe)
+        run: |
+          python scripts/make_test_drift.py smoke.wav
+          Start-Process -Wait -FilePath dist/TempoExtractorAI/TempoExtractorAI.exe -ArgumentList '-i','smoke.wav','--warp-out','smoke_out','--warp-bpm','120'
+          if (-not (Test-Path smoke_out/smoke_120bpm_beat.wav)) { Write-Error "warp output missing"; exit 1 }
+          Get-ChildItem smoke_out
 
       - name: Zip build output
         run: powershell Compress-Archive -Path dist/TempoExtractorAI -DestinationPath TempoExtractorAI-win64.zip
@@ -69,6 +85,17 @@ jobs:
       - name: Install PyInstaller
         run: python -m pip install pyinstaller
 
+      - name: Fetch Rubber Band CLI (GPL, bundled for tempo warp)
+        run: |
+          curl -sSfL -o rb.tar.bz2 https://breakfastquay.com/files/releases/rubberband-4.0.0-gpl-executable-macos.tar.bz2
+          mkdir rbtmp && tar xjf rb.tar.bz2 -C rbtmp
+          find rbtmp -maxdepth 3 | sort
+          exe=$(find rbtmp -type f \( -name rubberband-r3 -o -name rubberband \) | head -1)
+          mkdir -p tools && mv "$(dirname "$exe")" tools/rubberband
+          chmod +x tools/rubberband/rubberband*
+          file tools/rubberband/rubberband*
+          ( tools/rubberband/rubberband-r3 --version || tools/rubberband/rubberband --version )
+
       - name: Build app
         run: >
           python -m PyInstaller main.py
@@ -80,6 +107,14 @@ jobs:
           --collect-all imageio_ffmpeg
           --collect-all matplotlib
           --collect-all mido
+          --add-data "tools/rubberband:rubberband"
+
+      - name: Smoke test (analyze + tempo warp with the built app)
+        run: |
+          python scripts/make_test_drift.py smoke.wav
+          dist/TempoExtractorAI.app/Contents/MacOS/TempoExtractorAI -i smoke.wav --warp-out smoke_out --warp-bpm 120
+          test -f smoke_out/smoke_120bpm_beat.wav
+          ls -la smoke_out
 
       - name: Zip build output
         run: |

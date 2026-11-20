@@ -10,6 +10,30 @@ madmom (RNN + DBN Downbeat Tracker) を解析エンジンとして使用。
 量子化済みのループ素材をマスターテンポに追従させるだけで、曲全体を通してループが
 ズレずに重なるようになる。Studio Oneで実際に動作確認済み。
 
+## テンポ補正 (Tempo Warp)
+
+テンポマップを書き出す代わりに、音源そのものを指定した一定テンポに合わせて書き出す機能。
+検出した拍をグリッドに合わせて区間ごとに伸縮し、音程は変えない
+（伸縮には [Rubber Band](https://breakfastquay.com/rubberband/) のコマンドライン版を使う）。
+
+- **Every beat**: 全部の拍をグリッドに合わせる / **Downbeats only**: 小節頭だけ合わせ、小節内のノリは残す
+- **Stems**: パラデータ（ギター、ボーカルなど）を追加すると、解析したトラックと同じ伸縮をかけて書き出す。
+  拍がはっきりしたトラック（ドラムなど）を解析に使い、他のパートを Stems に入れると全トラックがずれずにそろう。
+  パラデータは解析したトラックと同じ開始位置であること。
+- 出力は `<元の名前>_<BPM>bpm_<beat|bar>.wav`（32bit float）。DAW のテンポを同じ BPM の固定にし、
+  完了ダイアログに出る「グリッドの始点」（最初の拍の位置）に合わせる。
+- 曲頭・曲末の音が無い部分に推測で補われた拍は、補正のアンカーから自動で外す。
+
+Releases の配布版（Windows / macOS）には Rubber Band が同梱済みなので、そのまま使える。
+ソースから動かす場合は、[公式サイト](https://breakfastquay.com/rubberband/) から CLI をダウンロードし、
+`tools\rubberband\` に展開する（Windows なら `rubberband-r3.exe` と `sndfile.dll` が入る）。
+`tools\rubberband\` があれば `build_exe.bat` が exe に同梱する。
+
+```bash
+# CLI: ドラムで解析し、ギターとボーカルも 107 BPM にそろえて書き出す
+.venv\Scripts\python.exe main.py -i drums.wav --warp-out out --warp-bpm 107 --stems guitar.wav vocal.wav
+```
+
 ## セットアップ (Windows)
 
 madmomはCython拡張を含むため、ビルドに **Python 3.9** と **Visual Studio Build Tools (C++)**
@@ -66,6 +90,7 @@ build_exe.bat
 
 `v*` 形式のタグをpushすると `.github/workflows/build-release.yml` がWindows/macOS両方を
 自動ビルドし、GitHub Releaseにzipを添付します（`workflow_dispatch`でタグ無しの手動実行も可能）。
+ビルド時に Rubber Band 4.0.0 の公式ビルド済み CLI をダウンロードして同梱します。
 
 - macOSビルドは未署名(Apple Developer証明書での署名・公証なし)です。初回起動時に
   Gatekeeperの警告が出るため、`.app`を右クリック→「開く」で許可するか、
@@ -77,6 +102,7 @@ build_exe.bat
 .venv\Scripts\python.exe scripts\make_test_click.py   # 120BPMクリック音源を生成
 .venv\Scripts\python.exe scripts\test_pipeline.py      # 解析→MIDI/CSV出力まで一気通貫でテスト
 .venv\Scripts\python.exe scripts\test_postprocess.py   # 異常値除去/スムージングの単体テスト
+.venv\Scripts\python.exe scripts\test_gui_warp.py      # GUIのテンポ補正(パラデータ含む)の一連の流れ
 ```
 
 ## 構成
@@ -99,3 +125,10 @@ main.py                         # GUI/CLI エントリポイント
 - 6/8拍子は「1小節=6拍」として解析します（付点4分音符2拍単位の検出ではありません）。
 - 極端なテンポ揺れ(生演奏の大きなルバート等)は誤検出が増える可能性があるため、
   スパイク除去フィルターとStart Offset手動調整を併用してください。
+
+## ライセンス
+
+GNU General Public License v3.0 or later（[LICENSE](LICENSE)）。
+
+配布版に同梱している [Rubber Band Library](https://breakfastquay.com/rubberband/)（CLI）は
+GPL v2 or later で配布されているもので、同梱フォルダ（`rubberband/`）にライセンス文（COPYING.txt）を含みます。
