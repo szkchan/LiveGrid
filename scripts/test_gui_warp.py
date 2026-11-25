@@ -16,7 +16,7 @@ from tempo_extractor import gui  # noqa: E402
 from tempo_extractor.analysis import AnalysisParams, analyze  # noqa: E402
 from tempo_extractor.audio_io import decode_to_wav  # noqa: E402
 
-work = Path(tempfile.mkdtemp(prefix="tempoextractor_test_"))
+work = Path(tempfile.mkdtemp(prefix="livegrid_test_"))
 src = work / "drift.wav"
 subprocess.run([sys.executable, str(ROOT / "scripts" / "make_test_drift.py"), str(src)], check=True)
 stem = work / "drift_stem.wav"
@@ -37,7 +37,7 @@ def wait(cond, timeout=120):
     assert cond(), "timed out"
 
 
-app = gui.TempoExtractorApp()
+app = gui.LiveGridApp()
 app.input_path.set(str(src))
 app._start_analysis()
 wait(lambda: app._result is not None)

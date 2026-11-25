@@ -1,4 +1,4 @@
-"""TempoExtractor AI - tkinter GUI"""
+"""LiveGrid - tkinter GUI"""
 from __future__ import annotations
 
 import queue
@@ -22,10 +22,10 @@ from .postprocess import PostProcessParams, SmoothingLevel
 from .warp import WarpParams, export_tracks, find_rubberband, suggest_bpm
 
 
-class TempoExtractorApp(tk.Tk):
+class LiveGridApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("TempoExtractor AI - Live Music Tempo Mapping Tool")
+        self.title("LiveGrid - Conform live recordings to a fixed tempo")
         self.geometry("760x860")
         self.minsize(700, 800)
 
@@ -232,13 +232,13 @@ class TempoExtractorApp(tk.Tk):
     def _start_analysis(self) -> None:
         input_path = self.input_path.get().strip()
         if not input_path:
-            messagebox.showwarning("TempoExtractor AI", "音声ファイルを選択してください。")
+            messagebox.showwarning("LiveGrid", "音声ファイルを選択してください。")
             return
         if not Path(input_path).exists():
-            messagebox.showerror("TempoExtractor AI", "指定されたファイルが見つかりません。")
+            messagebox.showerror("LiveGrid", "指定されたファイルが見つかりません。")
             return
         if self.min_bpm.get() >= self.max_bpm.get():
-            messagebox.showerror("TempoExtractor AI", "BPM範囲が不正です (Min < Max)。")
+            messagebox.showerror("LiveGrid", "BPM範囲が不正です (Min < Max)。")
             return
 
         self.start_button.config(state="disabled")
@@ -323,7 +323,7 @@ class TempoExtractorApp(tk.Tk):
     def _on_analysis_error(self, message: str) -> None:
         self.status_text.set("Status: Error")
         self.start_button.config(state="normal")
-        messagebox.showerror("TempoExtractor AI", f"解析エラー:\n{message}")
+        messagebox.showerror("LiveGrid", f"解析エラー:\n{message}")
 
     # --------------------------------------------------------- tempo warp --
     def _export_warped(self, out_dir: str | None = None) -> None:
@@ -331,7 +331,7 @@ class TempoExtractorApp(tk.Tk):
             return
         if find_rubberband() is None:
             messagebox.showerror(
-                "TempoExtractor AI",
+                "LiveGrid",
                 "Rubber Band が見つかりません。\n"
                 "tools/rubberband/ に rubberband-r3 を置くか、PATH を通してください。",
             )
@@ -341,13 +341,13 @@ class TempoExtractorApp(tk.Tk):
             if not 20 <= bpm <= 300:
                 raise ValueError
         except ValueError:
-            messagebox.showerror("TempoExtractor AI", "Target BPM は 20〜300 の数値で指定してください。")
+            messagebox.showerror("LiveGrid", "Target BPM は 20〜300 の数値で指定してください。")
             return
         tracks = ([self._analyzed_path] if self.warp_include_input.get() else []) + [
             Path(p) for p in self._stems
         ]
         if not tracks:
-            messagebox.showwarning("TempoExtractor AI", "書き出すトラックがありません。")
+            messagebox.showwarning("LiveGrid", "書き出すトラックがありません。")
             return
         out_dir = out_dir or filedialog.askdirectory(title="Select output folder")
         if not out_dir:
@@ -394,13 +394,13 @@ class TempoExtractorApp(tk.Tk):
         ]
         if plan.ratio_warning:
             lines += ["", "注意: 伸縮率が ±15% を超える区間があります。音質の劣化がないか確認してください。"]
-        messagebox.showinfo("TempoExtractor AI", "\n".join(lines))
+        messagebox.showinfo("LiveGrid", "\n".join(lines))
 
     def _on_warp_error(self, message: str) -> None:
         self.status_text.set("Status: Error")
         self.start_button.config(state="normal")
         self.warp_button.config(state="normal")
-        messagebox.showerror("TempoExtractor AI", f"テンポ補正エラー:\n{message}")
+        messagebox.showerror("LiveGrid", f"テンポ補正エラー:\n{message}")
 
     def _draw_tempo_curve(self, result: TempoMapResult) -> None:
         self.ax.clear()
@@ -425,9 +425,9 @@ class TempoExtractorApp(tk.Tk):
         try:
             records = filter_by_resolution(self._result.records, self.resolution_mode.get())
             save_midi(records, Path(path), self._result.time_signature)
-            messagebox.showinfo("TempoExtractor AI", f"MIDIを保存しました:\n{path}")
+            messagebox.showinfo("LiveGrid", f"MIDIを保存しました:\n{path}")
         except Exception as exc:  # noqa: BLE001
-            messagebox.showerror("TempoExtractor AI", f"保存エラー:\n{exc}")
+            messagebox.showerror("LiveGrid", f"保存エラー:\n{exc}")
 
     def _save_csv(self) -> None:
         if not self._result:
@@ -440,13 +440,13 @@ class TempoExtractorApp(tk.Tk):
         try:
             records = filter_by_resolution(self._result.records, self.resolution_mode.get())
             save_csv(records, Path(path))
-            messagebox.showinfo("TempoExtractor AI", f"CSVを保存しました:\n{path}")
+            messagebox.showinfo("LiveGrid", f"CSVを保存しました:\n{path}")
         except Exception as exc:  # noqa: BLE001
-            messagebox.showerror("TempoExtractor AI", f"保存エラー:\n{exc}")
+            messagebox.showerror("LiveGrid", f"保存エラー:\n{exc}")
 
 
 def main() -> None:
-    app = TempoExtractorApp()
+    app = LiveGridApp()
     app.mainloop()
 
 

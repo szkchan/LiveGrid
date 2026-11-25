@@ -6,7 +6,7 @@ set RB_OPT=
 if exist tools\rubberband\rubberband-r3.exe set RB_OPT=--add-data "tools\rubberband;rubberband"
 
 .venv\Scripts\python.exe -m PyInstaller main.py ^
-  --name TempoExtractorAI ^
+  --name LiveGrid ^
   --windowed ^
   --onedir ^
   --noconfirm ^

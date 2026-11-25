@@ -1,4 +1,4 @@
-"""TempoExtractor AI エントリポイント
+"""LiveGrid エントリポイント
 
 引数なし: GUIを起動
 引数あり: CLIモード (--input, --out-mid, --out-csv 等)
@@ -73,7 +73,7 @@ def run_cli(args: argparse.Namespace) -> int:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="TempoExtractor AI")
+    parser = argparse.ArgumentParser(description="LiveGrid - 生演奏の録音を一定テンポにそろえる / テンポマップを書き出す")
     parser.add_argument("--input", "-i", help="入力音声ファイル (指定するとCLIモード)")
     parser.add_argument("--out-mid", help="出力MIDIファイルパス")
     parser.add_argument("--out-csv", help="出力CSVファイルパス")

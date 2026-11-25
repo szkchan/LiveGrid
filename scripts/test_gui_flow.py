@@ -4,9 +4,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from tempo_extractor.gui import TempoExtractorApp
+from tempo_extractor.gui import LiveGridApp
 
-app = TempoExtractorApp()
+app = LiveGridApp()
 wav = Path(__file__).resolve().parent.parent / "test_click_120bpm.wav"
 app.input_path.set(str(wav))
 app.min_bpm.set(60)

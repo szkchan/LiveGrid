@@ -142,7 +142,7 @@ def build_plan(
 
 def _decode_full(input_path: Path) -> Path:
     """チャンネル数・サンプルレートを保ったまま float32 WAV に変換する(レンダリング用)"""
-    fd, out = tempfile.mkstemp(suffix=".wav", prefix="tempoextractor_full_")
+    fd, out = tempfile.mkstemp(suffix=".wav", prefix="livegrid_full_")
     os.close(fd)
     cmd = [
         imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-i", str(input_path),
@@ -174,7 +174,7 @@ def render(
             "PATH を通してください。"
         )
     full_wav = _decode_full(Path(input_path))
-    fd, map_path = tempfile.mkstemp(suffix=".txt", prefix="tempoextractor_map_")
+    fd, map_path = tempfile.mkstemp(suffix=".txt", prefix="livegrid_map_")
     os.close(fd)
     try:
         info = sf.info(str(full_wav))

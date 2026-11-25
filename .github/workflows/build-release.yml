@@ -40,7 +40,7 @@ jobs:
       - name: Build exe
         run: >
           python -m PyInstaller main.py
-          --name TempoExtractorAI
+          --name LiveGrid
           --windowed
           --onedir
           --noconfirm
@@ -53,17 +53,17 @@ jobs:
       - name: Smoke test (analyze + tempo warp with the built exe)
         run: |
           python scripts/make_test_drift.py smoke.wav
-          Start-Process -Wait -FilePath dist/TempoExtractorAI/TempoExtractorAI.exe -ArgumentList '-i','smoke.wav','--warp-out','smoke_out','--warp-bpm','120'
+          Start-Process -Wait -FilePath dist/LiveGrid/LiveGrid.exe -ArgumentList '-i','smoke.wav','--warp-out','smoke_out','--warp-bpm','120'
           if (-not (Test-Path smoke_out/smoke_120bpm_beat.wav)) { Write-Error "warp output missing"; exit 1 }
           Get-ChildItem smoke_out
 
       - name: Zip build output
-        run: powershell Compress-Archive -Path dist/TempoExtractorAI -DestinationPath TempoExtractorAI-win64.zip
+        run: powershell Compress-Archive -Path dist/LiveGrid -DestinationPath LiveGrid-win64.zip
 
       - uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: TempoExtractorAI-win64.zip
+          path: LiveGrid-win64.zip
 
   build-macos:
     runs-on: macos-latest
@@ -99,7 +99,7 @@ jobs:
       - name: Build app
         run: >
           python -m PyInstaller main.py
-          --name TempoExtractorAI
+          --name LiveGrid
           --windowed
           --onedir
           --noconfirm
@@ -112,19 +112,19 @@ jobs:
       - name: Smoke test (analyze + tempo warp with the built app)
         run: |
           python scripts/make_test_drift.py smoke.wav
-          dist/TempoExtractorAI.app/Contents/MacOS/TempoExtractorAI -i smoke.wav --warp-out smoke_out --warp-bpm 120
+          dist/LiveGrid.app/Contents/MacOS/LiveGrid -i smoke.wav --warp-out smoke_out --warp-bpm 120
           test -f smoke_out/smoke_120bpm_beat.wav
           ls -la smoke_out
 
       - name: Zip build output
         run: |
           cd dist
-          zip -r ../TempoExtractorAI-macos.zip TempoExtractorAI.app
+          zip -r ../LiveGrid-macos.zip LiveGrid.app
 
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: TempoExtractorAI-macos.zip
+          path: LiveGrid-macos.zip
 
   release:
     needs: [build-windows, build-macos]
@@ -139,5 +139,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            windows-build/TempoExtractorAI-win64.zip
-            macos-build/TempoExtractorAI-macos.zip
+            windows-build/LiveGrid-win64.zip
+            macos-build/LiveGrid-macos.zip

@@ -28,7 +28,7 @@ def decode_to_wav(input_path: Path) -> Path:
         raise FileNotFoundError(f"音声ファイルが見つかりません: {input_path}")
 
     ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-    fd, out_path_str = tempfile.mkstemp(suffix=".wav", prefix="tempoextractor_")
+    fd, out_path_str = tempfile.mkstemp(suffix=".wav", prefix="livegrid_")
     import os
 
     os.close(fd)
